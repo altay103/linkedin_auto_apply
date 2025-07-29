@@ -1,0 +1,17 @@
+# LinkedIn Otomatik İş Başvuru Sistemi - Gerekli Paketler
+
+# Web scraping ve otomasyon
+selenium==4.16.0
+
+# Veri işleme
+requests==2.31.0
+beautifulsoup4==4.12.2
+
+# Logging ve yapılandırma
+python-dotenv==1.0.0
+
+# Rastgele işlemler ve zaman
+fake-useragent==1.4.0
+
+# JSON ve veri kaydetme (Python'un kendi modülleri kullanılacak)
+# datetime, json, random, time, os - built-in modules

@@ -1,0 +1,64 @@
+name: LinkedIn Auto Apply Bot
+
+# Günlük çalışma zamanı (UTC)
+# Cron formatı: dakika saat gün ay haftanın_günü
+# '0 8 * * *' = Her gün saat 08:00 UTC'de (Türkiye saati 11:00)
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Her gün sabah 08:00 UTC (TR: 11:00)
+  
+  # Manuel çalıştırma için
+  workflow_dispatch:
+
+jobs:
+  linkedin-auto-apply:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Kodu GitHub'dan çek
+      - name: 📥 Repo'yu klonla
+        uses: actions/checkout@v4
+        
+      # 2. Python kurulumu
+      - name: 🐍 Python kurulumu
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      # 3. Chrome tarayıcısını kur (Selenium için)
+      - name: 🌐 Chrome tarayıcısı kurulumu
+        uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: stable
+          
+      # 4. Python paketlerini yükle
+      - name: 📦 Python paketlerini yükle
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      # 5. ChromeDriver'ı kur
+      - name: 🚗 ChromeDriver kurulumu
+        uses: nanasess/setup-chromedriver@v2
+        with:
+          chromedriver-version: 'latest'
+          
+      # 6. LinkedIn botunu çalıştır
+      - name: 🤖 LinkedIn botunu çalıştır
+        env:
+          LINKEDIN_EMAIL: ${{ secrets.LINKEDIN_EMAIL }}
+          LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
+        run: |
+          echo "🚀 LinkedIn Bot başlatılıyor..."
+          python main.py
+          
+      # 7. Log dosyalarını kaydet (hata durumunda)
+      - name: 📋 Log dosyalarını yükle
+        uses: actions/upload-artifact@v3
+        if: always()  # Her durumda çalışsın (başarı/başarısızlık)
+        with:
+          name: linkedin-bot-logs
+          path: |
+            linkedin_bot.log
+            linkedin_session.json
+          retention-days: 7  # 7 gün saklasın
