@@ -73,13 +73,83 @@ class LinkedInBot:
             raise
     
     def login_to_linkedin(self) -> bool:
-        """LinkedIn'e giriş yapar"""
+        """LinkedIn'e giriş yapar (Google Auth destekli)"""
         try:
             logger.info("🔑 LinkedIn'e giriş yapılıyor...")
             
             self.driver.get("https://www.linkedin.com/login")
             time.sleep(random.uniform(2, 4))
             
+            # Google ile giriş butonunu kontrol et
+            try:
+                google_signin_button = WebDriverWait(self.driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, "//button[contains(@aria-label, 'Google') or contains(text(), 'Google') or contains(@class, 'google')]"))
+                )
+                logger.info("🔍 Google giriş butonu bulundu, Google Auth kullanılıyor...")
+                return self.login_with_google()
+                
+            except TimeoutException:
+                logger.info("📧 Standart email/şifre girişi kullanılıyor...")
+                return self.login_with_email_password()
+                
+        except Exception as e:
+            logger.error(f"❌ LinkedIn giriş hatası: {str(e)}")
+            return False
+    
+    def login_with_google(self) -> bool:
+        """Google Auth ile LinkedIn'e giriş yapar"""
+        try:
+            logger.info("🔐 Google Auth ile giriş yapılıyor...")
+            
+            # Google ile giriş butonuna tıkla
+            google_button = self.driver.find_element(By.XPATH, "//button[contains(@aria-label, 'Google') or contains(text(), 'Google') or contains(@class, 'google')]")
+            google_button.click()
+            time.sleep(3)
+            
+            # Google giriş sayfasında email alanını bul
+            try:
+                email_field = WebDriverWait(self.driver, self.config.ELEMENT_WAIT_TIMEOUT).until(
+                    EC.presence_of_element_located((By.ID, "identifierId"))
+                )
+                email_field.clear()
+                self.human_like_typing(email_field, self.email)
+                
+                # İleri butonuna tıkla
+                next_button = self.driver.find_element(By.ID, "identifierNext")
+                next_button.click()
+                time.sleep(3)
+                
+                # Şifre alanını bul ve doldur
+                password_field = WebDriverWait(self.driver, self.config.ELEMENT_WAIT_TIMEOUT).until(
+                    EC.element_to_be_clickable((By.NAME, "password"))
+                )
+                password_field.clear()
+                self.human_like_typing(password_field, self.password)
+                
+                # Şifre giriş butonuna tıkla
+                password_next_button = self.driver.find_element(By.ID, "passwordNext")
+                password_next_button.click()
+                
+                # LinkedIn'e geri dönene kadar bekle
+                time.sleep(8)
+                
+                # Giriş kontrolü
+                return self.check_login_success()
+                
+            except TimeoutException:
+                logger.warning("⚠️ Google giriş sayfası yüklenemedi, manuel giriş gerekebilir")
+                # Manuel giriş için 30 saniye bekle
+                logger.info("⏳ Manuel Google girişi için 30 saniye bekleniyor...")
+                time.sleep(30)
+                return self.check_login_success()
+                
+        except Exception as e:
+            logger.error(f"❌ Google giriş hatası: {str(e)}")
+            return False
+    
+    def login_with_email_password(self) -> bool:
+        """Standart email/şifre ile giriş yapar"""
+        try:
             # Email alanını doldur
             email_field = WebDriverWait(self.driver, self.config.ELEMENT_WAIT_TIMEOUT).until(
                 EC.presence_of_element_located((By.ID, "username"))
@@ -96,17 +166,45 @@ class LinkedInBot:
             login_button = self.driver.find_element(By.XPATH, "//button[@type='submit']")
             login_button.click()
             
-            # Giriş kontrolü
             time.sleep(5)
-            if "feed" in self.driver.current_url or "mynetwork" in self.driver.current_url:
-                logger.info("✅ LinkedIn'e başarıyla giriş yapıldı")
-                return True
-            else:
-                logger.error("❌ LinkedIn girişi başarısız - URL kontrol et")
-                return False
-                
+            return self.check_login_success()
+            
         except Exception as e:
-            logger.error(f"❌ LinkedIn giriş hatası: {str(e)}")
+            logger.error(f"❌ Email/şifre giriş hatası: {str(e)}")
+            return False
+    
+    def check_login_success(self) -> bool:
+        """Giriş başarısını kontrol eder"""
+        try:
+            # Birden fazla URL kontrolü yap
+            success_indicators = [
+                "feed", "mynetwork", "jobs", "in/", "dashboard"
+            ]
+            
+            current_url = self.driver.current_url.lower()
+            
+            for indicator in success_indicators:
+                if indicator in current_url:
+                    logger.info("✅ LinkedIn'e başarıyla giriş yapıldı")
+                    return True
+            
+            # Alternatif: Ana sayfa elementlerini kontrol et
+            try:
+                # LinkedIn nav bar'ı varsa giriş başarılıdır
+                nav_element = WebDriverWait(self.driver, 5).until(
+                    EC.presence_of_element_located((By.XPATH, "//nav[contains(@class, 'global-nav')]"))
+                )
+                if nav_element:
+                    logger.info("✅ LinkedIn ana sayfası element kontrolü başarılı")
+                    return True
+            except TimeoutException:
+                pass
+            
+            logger.error(f"❌ LinkedIn girişi başarısız - Mevcut URL: {current_url}")
+            return False
+            
+        except Exception as e:
+            logger.error(f"❌ Giriş kontrolü hatası: {str(e)}")
             return False
     
     def human_like_typing(self, element, text: str):

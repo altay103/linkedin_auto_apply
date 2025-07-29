@@ -86,6 +86,13 @@ class Config:
         "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
     
+    # Google Auth ayarları
+    GOOGLE_AUTH_CONFIG = {
+        "enable_auto_detection": True,  # Google giriş butonunu otomatik algıla
+        "manual_wait_time": 30,  # Manuel giriş için bekleme süresi (saniye)
+        "max_login_attempts": 3,  # Maksimum giriş deneme sayısı
+    }
+    
     # Gelişmiş ayarlar
     ADVANCED_SETTINGS = {
         "scroll_pause_time": 2,  # Sayfa kaydırma arası bekleme

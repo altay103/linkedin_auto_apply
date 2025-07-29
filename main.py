@@ -36,7 +36,10 @@ def main():
         
         if missing_vars:
             logger.error(f"❌ Eksik çevre değişkenleri: {', '.join(missing_vars)}")
-            logger.error("GitHub Secrets'da LINKEDIN_EMAIL ve LINKEDIN_PASSWORD tanımlanmalı")
+            logger.error("GitHub Secrets'da şu bilgileri tanımlamalısınız:")
+            logger.error("- LINKEDIN_EMAIL: Google hesabınızın email adresi")
+            logger.error("- LINKEDIN_PASSWORD: Google hesabınızın şifresi")
+            logger.error("Not: LinkedIn'e Google Auth ile giriş yapıyorsanız Google bilgilerinizi kullanın")
             return False
         
         # Bot'u başlat

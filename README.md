@@ -27,12 +27,22 @@ GitHub repository'nizde **Secrets** ayarlayın:
 2. **New repository secret** butonuna tıklayın
 3. Aşağıdaki secret'ları ekleyin:
 
+**Google Auth ile giriş yapıyorsanız:**
 ```
-LINKEDIN_EMAIL=sizin@email.com
-LINKEDIN_PASSWORD=şifreniz
+LINKEDIN_EMAIL=google-hesabiniz@gmail.com
+LINKEDIN_PASSWORD=google-hesap-şifreniz
 ```
 
-⚠️ **ÖNEMLİ**: LinkedIn bilgileriniz GitHub Secrets'da güvenli şekilde saklanır ve kod içinde görünmez.
+**Standart LinkedIn hesabıyla giriş yapıyorsanız:**
+```
+LINKEDIN_EMAIL=linkedin@email.com
+LINKEDIN_PASSWORD=linkedin-şifreniz
+```
+
+⚠️ **ÖNEMLİ**: 
+- LinkedIn'e Google ile giriş yapıyorsanız **Google hesap bilgilerinizi** kullanın
+- Bot otomatik olarak Google Auth'u algılar ve kullanır
+- Bilgileriniz GitHub Secrets'da güvenli şekilde saklanır
 
 ### 3. Bot Ayarlarını Özelleştirme
 
